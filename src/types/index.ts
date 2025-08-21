@@ -173,6 +173,70 @@ export interface CommandAction {
   primary?: boolean;
 }
 
+// Missing type definitions
+export interface TenantData {
+  id: string;
+  name: string;
+  unit: string;
+  leaseStart: Date;
+  leaseEnd: Date;
+  rentAmount: number;
+  paymentStatus: 'current' | 'late' | 'pending';
+  contact: {
+    phone: string;
+    email: string;
+  };
+}
+
+export interface InspectionData {
+  lastInspection: Date;
+  nextDue: Date;
+  type: 'annual' | 'moveIn' | 'moveOut' | 'routine';
+  report?: string;
+}
+
+export interface MaintenanceRecord {
+  id: string;
+  date: Date;
+  type: string;
+  description: string;
+  cost: number;
+  vendor?: string;
+  warranty?: boolean;
+}
+
+export interface VendorContact {
+  id: string;
+  name: string;
+  service: string;
+  phone: string;
+  email?: string;
+  rating?: number;
+  insured: boolean;
+}
+
+export interface DocumentRefs {
+  insurance?: string[];
+  leases?: string[];
+  taxes?: string[];
+  warranties?: string[];
+  permits?: string[];
+}
+
+export interface MarketTrends {
+  appreciation: number;
+  rentGrowth: number;
+  daysOnMarket: number;
+  inventory: number;
+}
+
+export interface RentOptimization {
+  currentRent: number;
+  marketRent: number;
+  recommendedRent: number;
+  increaseStrategy: string;
+}
+
 // Additional utility types
 export type TabType = 'overview' | 'operations' | 'intelligence';
 

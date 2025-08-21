@@ -217,7 +217,7 @@ function WorkOrdersView({ property }: { property: Property }) {
   );
 }
 
-function WorkOrderCard({ order }: { order: any }) {
+function WorkOrderCard({ order }: { order: import('@/types').WorkOrder }) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-3">
       <div className="flex items-start justify-between">

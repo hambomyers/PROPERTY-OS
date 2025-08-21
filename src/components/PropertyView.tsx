@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+// import { useParams } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
 import { usePropertyStore } from '@/store/propertyStore';
 import TabButton from './TabButton';
@@ -9,7 +8,6 @@ import OperationsTab from './tabs/OperationsTab';
 import IntelligenceTab from './tabs/IntelligenceTab';
 
 export default function PropertyView() {
-  const { id } = useParams<{ id: string }>();
   const { getCurrentProperty, setActiveTab, activeTab } = usePropertyStore();
   
   const property = getCurrentProperty();

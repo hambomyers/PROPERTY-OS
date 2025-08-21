@@ -8,7 +8,7 @@ export default function UniversalCommandBar() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { activeTab, currentPropertyId } = usePropertyStore();
+  const { activeTab } = usePropertyStore();
 
   const handleInputChange = (value: string) => {
     setInput(value);
