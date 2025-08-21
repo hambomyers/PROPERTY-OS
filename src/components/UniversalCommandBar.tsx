@@ -8,9 +8,9 @@ import { PropertyGenesis } from '@/services/PropertyGenesis';
 
 const CONTEXTUAL_SUGGESTIONS = {
   overview: [
-    'Check health score',
-    'View recent alerts',
-    'Show property timeline'
+    '123 Main Street',
+    'Add new property',
+    'Search properties'
   ],
   operations: [
     'Schedule maintenance',
@@ -21,11 +21,6 @@ const CONTEXTUAL_SUGGESTIONS = {
     'Analyze market trends',
     'Optimize rent pricing',
     'Review expenses'
-  ],
-  home: [
-    '123 Main Street',
-    'Add new property',
-    'Search properties'
   ]
 };
 
@@ -41,8 +36,8 @@ export default function UniversalCommandBar() {
   const commandProcessor = CommandProcessor.getInstance();
   const propertyGenesis = PropertyGenesis.getInstance();
 
-  const currentSuggestions = CONTEXTUAL_SUGGESTIONS[activeTab as keyof typeof CONTEXTUAL_SUGGESTIONS] || CONTEXTUAL_SUGGESTIONS.home;
-  const placeholder = activeTab === 'home' 
+  const currentSuggestions = CONTEXTUAL_SUGGESTIONS[activeTab as keyof typeof CONTEXTUAL_SUGGESTIONS] || CONTEXTUAL_SUGGESTIONS.overview;
+  const placeholder = activeTab === 'overview' 
     ? 'Type an address or command...' 
     : `Ask about ${activeTab}...`;
 

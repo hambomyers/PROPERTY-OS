@@ -70,11 +70,11 @@ export const usePropertyStore = create<PropertyState>()(
       },
       
       getTotalValue: () => {
-        return get().properties.reduce((total, prop) => total + (prop.value || 0), 0);
+        return get().properties.reduce((total, prop) => total + (prop.overview.vitals.currentValue.amount || 0), 0);
       },
       
       getMonthlyIncome: () => {
-        return get().properties.reduce((total, prop) => total + (prop.monthlyIncome || 0), 0);
+        return get().properties.reduce((total, prop) => total + (prop.overview.vitals.monthlyRevenue.amount || 0), 0);
       }
     }),
     {
