@@ -1,0 +1,21 @@
+# Cloudflare Pages configuration for PropertyOS
+name = "property-os"
+compatibility_date = "2024-08-21"
+
+[build]
+command = "npm run build"
+cwd = "."
+watch_dir = "src"
+
+[build.environment_variables]
+NODE_VERSION = "18"
+
+# Future: Worker configuration for Phase 7
+# [env.production]
+# name = "property-os-production"
+# workers_dev = false
+# route = "propertyos.com/*"
+
+# [env.staging]
+# name = "property-os-staging"
+# workers_dev = true
