@@ -1,8 +1,11 @@
+import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { usePropertyStore } from '@/store/propertyStore';
 import type { Property } from '@/types';
 
 export default function Home() {
+  const navigate = useNavigate();
   const { getPropertiesList } = usePropertyStore();
   const properties = getPropertiesList();
 
@@ -13,10 +16,16 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center"
+          className="text-center mb-8"
         >
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">PropertyOS</h1>
-          <p className="text-gray-600">Unified property management platform</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">PropertyOS</h1>
+          <p className="text-gray-600">Type an address or add your property data</p>
+          <button
+            onClick={() => navigate('/add-property')}
+            className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Add Real Property Data
+          </button>
         </motion.div>
       </div>
 
