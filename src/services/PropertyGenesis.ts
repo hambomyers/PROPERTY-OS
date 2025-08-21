@@ -1,9 +1,9 @@
-import { PropertyData, PropertyType, PropertyStatus } from '@/types';
+import { Property, PropertyType, PropertyStatus } from '@/types';
 import { AddressMatch } from '@/utils/addressDetection';
 
 export interface PropertyCreationResult {
   success: boolean;
-  property?: PropertyData;
+  property?: Property;
   message: string;
 }
 
@@ -37,7 +37,7 @@ export class PropertyGenesis {
     }
   }
 
-  private generatePropertyData(addressMatch: AddressMatch): PropertyData {
+  private generatePropertyData(addressMatch: AddressMatch): Property {
     const id = this.generatePropertyId();
     const address = addressMatch.formatted;
     
@@ -76,59 +76,52 @@ export class PropertyGenesis {
           vendors: []
         },
         tenants: [],
-        inspections: []
+        inspections: {
+          lastInspection: new Date(),
+          nextDue: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          type: 'annual' as const
+        }
       },
       intelligence: {
-        insights: [],
-        marketTrends: {
-          valueGrowth: 0.05,
-          rentGrowth: 0.03,
-          marketHealth: 'strong' as const
+        financial: {
+          monthlyRevenue: Math.round(baseValue * 0.008),
+          monthlyExpenses: Math.round(baseValue * 0.003),
+          noi: Math.round(baseValue * 0.005),
+          cashFlow: Math.round(baseValue * 0.005),
+          capRate: 0.06,
+          expenses: {
+            maintenance: Math.round(baseValue * 0.001),
+            insurance: Math.round(baseValue * 0.0005),
+            taxes: Math.round(baseValue * 0.001),
+            utilities: Math.round(baseValue * 0.0003),
+            management: Math.round(baseValue * 0.0002),
+            other: Math.round(baseValue * 0.0001)
+          }
         },
-        recommendations: []
+        market: {
+          comps: [],
+          trends: {
+            appreciation: 0.05,
+            rentGrowth: 0.03,
+            daysOnMarket: 30,
+            inventory: 45
+          },
+          rentOptimization: {
+            currentRent: Math.round(baseValue * 0.008),
+            marketRent: Math.round(baseValue * 0.0085),
+            recommendedRent: Math.round(baseValue * 0.0082),
+            increaseStrategy: 'gradual'
+          }
+        },
+        insights: [],
+        documents: {
+          leases: [],
+          insurance: [],
+          taxes: []
+        }
       },
-      
-      // Financial data
-      purchasePrice: baseValue,
-      currentValue: Math.round(baseValue * (0.95 + Math.random() * 0.2)), // ±10% variation
-      monthlyRent: Math.round(baseValue * 0.008 + Math.random() * 200), // ~0.8% of value
-      monthlyExpenses: Math.round(baseValue * 0.003 + Math.random() * 150),
-      
-      // Calculated metrics
-      healthScore: this.generateHealthScore(),
-      occupancyRate: 0.95 + Math.random() * 0.05, // 95-100%
-      
-      // Location data
-      neighborhood: this.generateNeighborhood(address),
-      city: addressMatch.components.city || this.extractCityFromAddress(address),
-      state: addressMatch.components.state || 'MA',
-      zipCode: addressMatch.components.zip || this.generateZipCode(),
-      
-      // Coordinates (mock Boston area)
-      coordinates: this.generateCoordinates(),
-      
-      // Timestamps
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      
-      // Additional data
-      description: this.generateDescription(propertyType, address),
-      amenities: this.generateAmenities(propertyType),
-      
-      // Mock tenant data
-      tenants: this.generateTenantData(),
-      
-      // Mock maintenance data
-      maintenanceRecords: this.generateMaintenanceRecords(),
-      
-      // Mock documents
-      documents: this.generateDocuments(),
-      
-      // Market data
-      marketTrends: this.generateMarketTrends(),
-      
-      // Inspection data
-      lastInspection: this.generateInspectionData()
+      created: Date.now(),
+      updated: Date.now()
     };
   }
 
