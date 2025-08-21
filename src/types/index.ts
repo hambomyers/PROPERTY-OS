@@ -161,11 +161,34 @@ export interface CommandContext {
   commandType?: CommandType;
 }
 
+export type CommandType = 
+  | 'address'
+  | 'search'
+  | 'navigation'
+  | 'maintenance'
+  | 'tenant'
+  | 'analysis'
+  | 'help'
+  | 'create'
+  | 'scheduling'
+  | 'unknown';
+
 export interface CommandAction {
   label: string;
   action: () => void;
   primary?: boolean;
 }
+
+export interface CommandResult {
+  success: boolean;
+  message: string;
+  data: any;
+}
+
+// Property type aliases for compatibility
+export type PropertyData = Property;
+export type PropertyType = 'single_family' | 'condo' | 'townhouse' | 'apartment' | 'multi_family' | 'commercial';
+export type PropertyStatus = 'active' | 'inactive' | 'pending' | 'sold';
 
 export interface CommandResponse {
   type: 'success' | 'error' | 'info';

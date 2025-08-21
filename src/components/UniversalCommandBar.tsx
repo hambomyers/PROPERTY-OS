@@ -41,7 +41,7 @@ export default function UniversalCommandBar() {
   const commandProcessor = CommandProcessor.getInstance();
   const propertyGenesis = PropertyGenesis.getInstance();
 
-  const currentSuggestions = CONTEXTUAL_SUGGESTIONS[activeTab] || CONTEXTUAL_SUGGESTIONS.home;
+  const currentSuggestions = CONTEXTUAL_SUGGESTIONS[activeTab as keyof typeof CONTEXTUAL_SUGGESTIONS] || CONTEXTUAL_SUGGESTIONS.home;
   const placeholder = activeTab === 'home' 
     ? 'Type an address or command...' 
     : `Ask about ${activeTab}...`;

@@ -3,94 +3,79 @@ import { devtools } from 'zustand/middleware';
 import type { Property, TabType } from '@/types';
 
 interface PropertyState {
-  // Properties data
-  properties: Record<string, Property>;
-  currentPropertyId: string | null;
-  
-  // UI state
+  properties: Property[];
+  activeProperty: Property | null;
   activeTab: TabType;
-  isLoading: boolean;
+  loading: boolean;
   error: string | null;
   
   // Actions
-  setProperties: (properties: Property[]) => void;
   addProperty: (property: Property) => void;
+  removeProperty: (id: string) => void;
   updateProperty: (id: string, updates: Partial<Property>) => void;
-  setCurrentProperty: (id: string | null) => void;
+  setActiveProperty: (property: Property | null) => void;
   setActiveTab: (tab: TabType) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   
-  // Computed values
-  getCurrentProperty: () => Property | null;
-  getPropertiesList: () => Property[];
+  // Computed
+  getPropertyById: (id: string) => Property | undefined;
+  getTotalValue: () => number;
+  getMonthlyIncome: () => number;
 }
 
 export const usePropertyStore = create<PropertyState>()(
   devtools(
     (set, get) => ({
       // Initial state
-      properties: {},
-      currentPropertyId: null,
+      properties: [],
+      activeProperty: null,
       activeTab: 'overview',
-      isLoading: false,
+      loading: false,
       error: null,
 
       // Actions
-      setProperties: (properties) =>
-        set(() => ({
-          properties: properties.reduce((acc, prop) => {
-            acc[prop.id] = prop;
-            return acc;
-          }, {} as Record<string, Property>),
-        })),
-
-      addProperty: (property) =>
+      addProperty: (property: Property) =>
         set((state) => ({
-          properties: {
-            ...state.properties,
-            [property.id]: property,
-          },
+          properties: [...state.properties, property]
         })),
-
-      updateProperty: (id, updates) =>
+      
+      removeProperty: (id: string) =>
         set((state) => ({
-          properties: {
-            ...state.properties,
-            [id]: { ...state.properties[id], ...updates },
-          },
+          properties: state.properties.filter(p => p.id !== id)
         })),
-
-      setCurrentProperty: (id) =>
-        set(() => ({
-          currentPropertyId: id,
+      
+      updateProperty: (id: string, updates: Partial<Property>) =>
+        set((state) => ({
+          properties: state.properties.map(p => 
+            p.id === id ? { ...p, ...updates } : p
+          )
         })),
+      
+      setActiveProperty: (property: Property | null) =>
+        set(() => ({ activeProperty: property })),
+      
+      setActiveTab: (tab: TabType) =>
+        set(() => ({ activeTab: tab })),
+      
+      setLoading: (loading: boolean) =>
+        set(() => ({ loading })),
+      
+      setError: (error: string | null) =>
+        set(() => ({ error })),
 
-      setActiveTab: (tab) =>
-        set(() => ({
-          activeTab: tab,
-        })),
-
-      setLoading: (loading) =>
-        set(() => ({
-          isLoading: loading,
-        })),
-
-      setError: (error) =>
-        set(() => ({
-          error,
-        })),
-
-      // Computed values
-      getCurrentProperty: () => {
-        const { properties, currentPropertyId } = get();
-        return currentPropertyId ? properties[currentPropertyId] || null : null;
+      // Computed
+      getPropertyById: (id: string) => {
+        return get().properties.find(p => p.id === id);
       },
-
-      getPropertiesList: () => {
-        const { properties } = get();
-        return Object.values(properties);
+      
+      getTotalValue: () => {
+        return get().properties.reduce((total, prop) => total + (prop.value || 0), 0);
       },
+      
+      getMonthlyIncome: () => {
+        return get().properties.reduce((total, prop) => total + (prop.monthlyIncome || 0), 0);
+      }
     }),
     {
       name: 'property-store',
