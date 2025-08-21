@@ -22,6 +22,8 @@ export class CommandProcessor {
   async processInput(input: string, context?: { activeTab?: string }): Promise<ProcessedCommand> {
     const trimmed = input.trim();
     
+    console.log('CommandProcessor: Processing input:', trimmed);
+    
     if (!trimmed) {
       return {
         type: 'unknown',
@@ -32,7 +34,10 @@ export class CommandProcessor {
 
     // 1. Check for address first (highest priority)
     const addressMatch = detectAddress(trimmed);
+    console.log('CommandProcessor: Address detection result:', addressMatch);
+    
     if (addressMatch.isAddress && addressMatch.confidence > 0.6) {
+      console.log('CommandProcessor: Detected as address with confidence:', addressMatch.confidence);
       return {
         type: 'address',
         input: trimmed,

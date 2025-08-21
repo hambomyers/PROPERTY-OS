@@ -57,6 +57,7 @@ export default function UniversalCommandBar() {
     e.preventDefault();
     if (!input.trim() || isProcessing) return;
     
+    console.log('Processing input:', input);
     setIsProcessing(true);
     setShowSuggestions(false);
 
