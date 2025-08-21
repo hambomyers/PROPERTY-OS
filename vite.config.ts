@@ -14,9 +14,13 @@ export default defineConfig({
     port: 3000,
     host: true,
   },
+  css: {
+    postcss: './postcss.config.js',
+  },
   build: {
     target: 'esnext',
     minify: 'esbuild',
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
         manualChunks: {
