@@ -174,8 +174,6 @@ export interface CommandResponse {
   actions?: CommandAction[];
 }
 
-}
-
 // Missing type definitions
 export interface TenantData {
   id: string;
