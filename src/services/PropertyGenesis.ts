@@ -57,15 +57,15 @@ export class PropertyGenesis {
       geo: [42.3601, -71.0589] as [number, number],
       overview: {
         healthScore: this.generateHealthScore(),
-        status: 'green' as const,
-        alerts: [],
+        status: this.generatePropertyStatus(),
+        alerts: this.generateAlerts(),
         vitals: {
-          currentValue: { amount: baseValue, trend: 0.05 },
-          monthlyRevenue: { amount: Math.round(baseValue * 0.008), status: 'collected' as const },
-          occupancy: { status: true },
-          nextAction: { type: 'inspection', date: new Date(), description: 'Annual inspection due' }
+          currentValue: { amount: baseValue, trend: this.generateTrend() },
+          monthlyRevenue: { amount: Math.round(baseValue * 0.008), status: this.generateRevenueStatus() },
+          occupancy: { status: Math.random() > 0.1 },
+          nextAction: this.generateNextAction()
         },
-        recentActivity: []
+        recentActivity: this.generateRecentActivity()
       },
       operations: {
         workOrders: [],
@@ -195,7 +195,73 @@ export class PropertyGenesis {
   }
 
   private generateHealthScore(): number {
-    return Math.round(70 + Math.random() * 30); // 70-100
+    return Math.floor(Math.random() * 30) + 70; // 70-100 range
+  }
+
+  private generatePropertyStatus(): 'green' | 'yellow' | 'red' {
+    const score = this.generateHealthScore();
+    if (score >= 80) return 'green';
+    if (score >= 60) return 'yellow';
+    return 'red';
+  }
+
+  private generateAlerts(): any[] {
+    const alerts = [];
+    const alertTypes = [
+      { type: 'maintenance', severity: 'warning', message: 'HVAC filter replacement due' },
+      { type: 'financial', severity: 'info', message: 'Rent increase opportunity available' },
+      { type: 'compliance', severity: 'critical', message: 'Fire inspection required' },
+      { type: 'tenant', severity: 'warning', message: 'Lease renewal due in 30 days' }
+    ];
+    
+    // Randomly add 0-2 alerts
+    const numAlerts = Math.floor(Math.random() * 3);
+    for (let i = 0; i < numAlerts; i++) {
+      alerts.push(alertTypes[Math.floor(Math.random() * alertTypes.length)]);
+    }
+    return alerts;
+  }
+
+  private generateTrend(): number {
+    return (Math.random() - 0.5) * 0.2; // -10% to +10%
+  }
+
+  private generateRevenueStatus(): 'collected' | 'pending' | 'late' {
+    const statuses = ['collected', 'pending', 'late'];
+    const weights = [0.8, 0.15, 0.05]; // 80% collected, 15% pending, 5% late
+    const random = Math.random();
+    let cumulative = 0;
+    
+    for (let i = 0; i < weights.length; i++) {
+      cumulative += weights[i];
+      if (random <= cumulative) {
+        return statuses[i] as 'collected' | 'pending' | 'late';
+      }
+    }
+    return 'collected';
+  }
+
+  private generateNextAction(): any {
+    const actions = [
+      { type: 'inspection', date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), description: 'Annual safety inspection' },
+      { type: 'maintenance', date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), description: 'HVAC service appointment' },
+      { type: 'lease', date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), description: 'Lease renewal discussion' },
+      { type: 'financial', date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), description: 'Rent collection follow-up' }
+    ];
+    return actions[Math.floor(Math.random() * actions.length)];
+  }
+
+  private generateRecentActivity(): any[] {
+    const activities = [
+      { type: 'payment', timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), description: 'Rent payment received - $2,400', icon: '💰' },
+      { type: 'maintenance', timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), description: 'Plumbing repair completed', icon: '🔧' },
+      { type: 'inspection', timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), description: 'Monthly property inspection', icon: '📋' },
+      { type: 'tenant', timestamp: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), description: 'New tenant application approved', icon: '👥' }
+    ];
+    
+    // Return 2-4 recent activities
+    const numActivities = Math.floor(Math.random() * 3) + 2;
+    return activities.slice(0, numActivities);
   }
 
   private generateNeighborhood(address: string): string {
