@@ -47,16 +47,46 @@ export class PropertyGenesis {
     
     return {
       id,
-      address,
-      propertyType,
-      status: 'active' as PropertyStatus,
-      
-      // Basic info
-      bedrooms: this.generateBedrooms(propertyType),
-      bathrooms: this.generateBathrooms(propertyType),
-      squareFootage: this.generateSquareFootage(propertyType),
-      yearBuilt: this.generateYearBuilt(),
-      lotSize: this.generateLotSize(propertyType),
+      address: {
+        street: address,
+        city: this.extractCityFromAddress(address),
+        state: 'MA',
+        zip: '02101',
+        formatted: address
+      },
+      geo: [42.3601, -71.0589] as [number, number],
+      overview: {
+        healthScore: this.generateHealthScore(),
+        status: 'green' as const,
+        alerts: [],
+        vitals: {
+          currentValue: { amount: baseValue, trend: 0.05 },
+          monthlyRevenue: { amount: Math.round(baseValue * 0.008), status: 'collected' as const },
+          occupancy: { status: true },
+          nextAction: { type: 'inspection', date: new Date(), description: 'Annual inspection due' }
+        },
+        recentActivity: []
+      },
+      operations: {
+        workOrders: [],
+        maintenance: {
+          scheduled: [],
+          predicted: [],
+          history: [],
+          vendors: []
+        },
+        tenants: [],
+        inspections: []
+      },
+      intelligence: {
+        insights: [],
+        marketTrends: {
+          valueGrowth: 0.05,
+          rentGrowth: 0.03,
+          marketHealth: 'strong' as const
+        },
+        recommendations: []
+      },
       
       // Financial data
       purchasePrice: baseValue,

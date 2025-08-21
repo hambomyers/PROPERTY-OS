@@ -68,7 +68,7 @@ function MaintenanceView({ property }: { property: Property }) {
         <div>
           <h3 className="text-sm font-medium text-gray-900 mb-3">Predicted Issues</h3>
           <div className="space-y-2">
-            {property.operations.maintenance.predicted.map((prediction, index) => (
+            {property.operations.maintenance.predicted.map((prediction: any, index: number) => (
               <div key={index} className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                 <div className="flex items-start justify-between">
                   <div>
@@ -93,7 +93,7 @@ function MaintenanceView({ property }: { property: Property }) {
         <h3 className="text-sm font-medium text-gray-900 mb-3">Scheduled Maintenance</h3>
         {property.operations.maintenance.scheduled.length > 0 ? (
           <div className="space-y-2">
-            {property.operations.maintenance.scheduled.map((task) => (
+            {property.operations.maintenance.scheduled.map((task: any) => (
               <div key={task.id} className="bg-white border border-gray-200 rounded-lg p-3">
                 <div className="flex items-start justify-between">
                   <div>
@@ -134,7 +134,7 @@ function TenantsView({ property }: { property: Property }) {
       <h3 className="text-sm font-medium text-gray-900 mb-3">Current Tenants</h3>
       {property.operations.tenants.length > 0 ? (
         <div className="space-y-3">
-          {property.operations.tenants.map((tenant, index) => (
+          {property.operations.tenants.map((tenant: any, index: number) => (
             <div key={index} className="bg-white border border-gray-200 rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div>
@@ -173,7 +173,7 @@ function WorkOrdersView({ property }: { property: Property }) {
         <h3 className="text-sm font-medium text-gray-900 mb-3">Open ({openOrders.length})</h3>
         {openOrders.length > 0 ? (
           <div className="space-y-2">
-            {openOrders.map((order) => (
+            {openOrders.map((order: any) => (
               <WorkOrderCard key={order.id} order={order} />
             ))}
           </div>
@@ -187,7 +187,7 @@ function WorkOrdersView({ property }: { property: Property }) {
         <div>
           <h3 className="text-sm font-medium text-gray-900 mb-3">In Progress ({inProgressOrders.length})</h3>
           <div className="space-y-2">
-            {inProgressOrders.map((order) => (
+            {inProgressOrders.map((order: any) => (
               <WorkOrderCard key={order.id} order={order} />
             ))}
           </div>
@@ -199,7 +199,7 @@ function WorkOrdersView({ property }: { property: Property }) {
         <div>
           <h3 className="text-sm font-medium text-gray-900 mb-3">Recently Completed</h3>
           <div className="space-y-2">
-            {completedOrders.slice(0, 3).map((order) => (
+            {completedOrders.slice(0, 3).map((order: any) => (
               <WorkOrderCard key={order.id} order={order} />
             ))}
           </div>

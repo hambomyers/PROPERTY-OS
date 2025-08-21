@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { usePropertyStore } from '@/store/propertyStore';
+import type { Property } from '@/types';
 
 export default function Home() {
   const { getPropertiesList } = usePropertyStore();
@@ -56,7 +57,7 @@ export default function Home() {
           </motion.div>
         ) : (
           <div className="space-y-3">
-            {properties.map((property, index) => (
+            {properties.map((property: Property, index: number) => (
               <motion.div
                 key={property.id}
                 initial={{ opacity: 0, y: 20 }}

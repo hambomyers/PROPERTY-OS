@@ -5,6 +5,7 @@ import type { Property, TabType } from '@/types';
 interface PropertyState {
   properties: Property[];
   activeProperty: Property | null;
+  currentPropertyId: string | null;
   activeTab: TabType;
   loading: boolean;
   error: string | null;
@@ -22,6 +23,8 @@ interface PropertyState {
   getPropertyById: (id: string) => Property | undefined;
   getTotalValue: () => number;
   getMonthlyIncome: () => number;
+  getPropertiesList: () => Property[];
+  getCurrentProperty: () => Property | undefined;
 }
 
 export const usePropertyStore = create<PropertyState>()(
@@ -30,6 +33,7 @@ export const usePropertyStore = create<PropertyState>()(
       // Initial state
       properties: [],
       activeProperty: null,
+      currentPropertyId: null,
       activeTab: 'overview',
       loading: false,
       error: null,
@@ -75,6 +79,16 @@ export const usePropertyStore = create<PropertyState>()(
       
       getMonthlyIncome: () => {
         return get().properties.reduce((total, prop) => total + (prop.overview.vitals.monthlyRevenue.amount || 0), 0);
+      },
+
+      // Missing computed getters
+      getPropertiesList: () => {
+        return get().properties;
+      },
+
+      getCurrentProperty: () => {
+        const state = get();
+        return state.properties.find(p => p.id === state.currentPropertyId);
       }
     }),
     {

@@ -1,5 +1,5 @@
 import { detectAddress, AddressMatch } from '@/utils/addressDetection';
-import { Property, CommandType, CommandResult } from '@/types';
+import type { CommandType, CommandResult } from '@/types';
 
 export interface ProcessedCommand {
   type: CommandType;
@@ -338,7 +338,7 @@ export class CommandProcessor {
     };
   }
 
-  private async handleHelpCommand(command: ProcessedCommand): Promise<CommandResult> {
+  private async handleHelpCommand(_command: ProcessedCommand): Promise<CommandResult> {
     return {
       success: true,
       message: 'Here are some things you can try:\n• Type an address to create a property\n• Say "show maintenance" for work orders\n• Ask "what is the health score?"',
