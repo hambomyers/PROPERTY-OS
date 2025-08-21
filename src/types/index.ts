@@ -158,6 +158,13 @@ export interface CommandContext {
   activeTab: 'overview' | 'operations' | 'intelligence';
   location?: [number, number];
   timestamp: number;
+  commandType?: CommandType;
+}
+
+export interface CommandAction {
+  label: string;
+  action: () => void;
+  primary?: boolean;
 }
 
 export interface CommandResponse {
@@ -167,10 +174,6 @@ export interface CommandResponse {
   actions?: CommandAction[];
 }
 
-export interface CommandAction {
-  label: string;
-  action: () => void;
-  primary?: boolean;
 }
 
 // Missing type definitions

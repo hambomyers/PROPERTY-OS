@@ -1,184 +1,214 @@
-import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MicrophoneIcon, CameraIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 import { usePropertyStore } from '@/store/propertyStore';
+import { CommandProcessor } from '@/services/CommandProcessor';
+import { PropertyGenesis } from '@/services/PropertyGenesis';
+
+const CONTEXTUAL_SUGGESTIONS = {
+  overview: [
+    'Check health score',
+    'View recent alerts',
+    'Show property timeline'
+  ],
+  operations: [
+    'Schedule maintenance',
+    'Contact tenant',
+    'Create work order'
+  ],
+  intelligence: [
+    'Analyze market trends',
+    'Optimize rent pricing',
+    'Review expenses'
+  ],
+  home: [
+    '123 Main Street',
+    'Add new property',
+    'Search properties'
+  ]
+};
 
 export default function UniversalCommandBar() {
   const [input, setInput] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const { activeTab } = usePropertyStore();
+  const [isListening, setIsListening] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const { activeTab, addProperty, setActiveProperty } = usePropertyStore();
 
-  const handleInputChange = (value: string) => {
-    setInput(value);
-    
-    // Generate contextual suggestions based on input and active tab
-    const newSuggestions = generateSuggestions(value, activeTab);
-    setSuggestions(newSuggestions);
-  };
+  const commandProcessor = CommandProcessor.getInstance();
+  const propertyGenesis = PropertyGenesis.getInstance();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const currentSuggestions = CONTEXTUAL_SUGGESTIONS[activeTab] || CONTEXTUAL_SUGGESTIONS.home;
+  const placeholder = activeTab === 'home' 
+    ? 'Type an address or command...' 
+    : `Ask about ${activeTab}...`;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && e.target !== inputRef.current) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isProcessing) return;
     
-    // Process command (Phase 2 functionality)
-    console.log('Processing command:', input, 'in tab:', activeTab);
-    
-    // Clear input and suggestions
-    setInput('');
-    setSuggestions([]);
-  };
+    setIsProcessing(true);
+    setShowSuggestions(false);
 
-  const handleVoiceRecord = () => {
-    setIsRecording(!isRecording);
-    // Voice recording functionality will be added in Phase 9
-  };
+    try {
+      // Process the command
+      const command = await commandProcessor.processInput(input, { activeTab });
+      console.log('Processed command:', command);
 
-  const handleImageUpload = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Image processing functionality will be added in Phase 9
-      console.log('Processing image:', file.name);
+      // Handle address commands specially
+      if (command.type === 'address' && command.addressMatch) {
+        const result = await propertyGenesis.createPropertyFromAddress(command.addressMatch);
+        
+        if (result.success && result.property) {
+          // Add property to store
+          addProperty(result.property);
+          setActiveProperty(result.property);
+          
+          // Navigate to property view
+          navigate(`/property/${result.property.id}`);
+          
+          // Show success message
+          console.log('Property created successfully:', result.property.address);
+        } else {
+          console.error('Failed to create property:', result.message);
+        }
+      } else {
+        // Execute other command types
+        const result = await commandProcessor.executeCommand(command);
+        console.log('Command result:', result);
+        
+        // Handle navigation commands
+        if (result.data?.type === 'navigation') {
+          const target = result.data.target;
+          if (target === 'home') {
+            navigate('/');
+          } else if (['overview', 'operations', 'intelligence'].includes(target)) {
+            // If we have an active property, navigate to that tab
+            const currentProperty = usePropertyStore.getState().activeProperty;
+            if (currentProperty) {
+              navigate(`/property/${currentProperty.id}`);
+              // The PropertyView component will handle tab switching
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error processing command:', error);
+    } finally {
+      setInput('');
+      setIsProcessing(false);
     }
   };
 
-  return (
-    <>
-      {/* Suggestions overlay */}
-      {suggestions.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 10 }}
-          className="fixed bottom-20 left-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 max-h-40 overflow-y-auto z-50"
-        >
-          {suggestions.map((suggestion, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setInput(suggestion);
-                setSuggestions([]);
-              }}
-              className="w-full text-left px-4 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-            >
-              <span className="text-sm text-gray-700">{suggestion}</span>
-            </button>
-          ))}
-        </motion.div>
-      )}
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
+    setShowSuggestions(false);
+    inputRef.current?.focus();
+  };
 
-      {/* Command Bar */}
-      <div className="command-bar">
-        <form onSubmit={handleSubmit} className="flex items-center gap-3">
-          {/* Text Input */}
+  const handleVoiceInput = () => {
+    setIsListening(!isListening);
+    // TODO: Implement voice recognition
+  };
+
+  const handleCameraInput = () => {
+    // TODO: Implement camera/photo input
+    console.log('Camera input requested');
+  };
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+      <div className="max-w-md mx-auto">
+        <AnimatePresence>
+          {showSuggestions && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="mb-3 bg-gray-50 rounded-lg p-3"
+            >
+              <div className="text-xs text-gray-500 mb-2">Suggestions:</div>
+              <div className="space-y-1">
+                {currentSuggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="block w-full text-left text-sm text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <form onSubmit={handleSubmit} className="flex items-center space-x-2">
           <div className="flex-1 relative">
             <input
+              ref={inputRef}
               type="text"
               value={input}
-              onChange={(e) => handleInputChange(e.target.value)}
-              placeholder={getPlaceholderText(activeTab)}
-              className="w-full px-4 py-3 bg-gray-100 rounded-full border-0 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+              onChange={(e) => setInput(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              placeholder={isProcessing ? 'Processing...' : placeholder}
+              disabled={isProcessing}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
             />
+            {isProcessing && (
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              </div>
+            )}
           </div>
 
-          {/* Voice Button */}
           <button
             type="button"
-            onClick={handleVoiceRecord}
-            className={`p-3 rounded-full transition-colors ${
-              isRecording 
+            onClick={handleVoiceInput}
+            disabled={isProcessing}
+            className={`p-3 rounded-full transition-colors disabled:opacity-50 ${
+              isListening 
                 ? 'bg-red-500 text-white' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
-            </svg>
+            <MicrophoneIcon className="w-5 h-5" />
           </button>
 
-          {/* Camera Button */}
           <button
             type="button"
-            onClick={handleImageUpload}
-            className="p-3 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            onClick={handleCameraInput}
+            disabled={isProcessing}
+            className="p-3 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50"
           >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-            </svg>
+            <CameraIcon className="w-5 h-5" />
           </button>
 
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-          />
+          <button
+            type="submit"
+            disabled={!input.trim() || isProcessing}
+            className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <PaperAirplaneIcon className="w-5 h-5" />
+          </button>
         </form>
       </div>
-    </>
+    </div>
   );
-}
-
-function getPlaceholderText(activeTab: string): string {
-  switch (activeTab) {
-    case 'overview':
-      return 'Type address or "show health score"...';
-    case 'operations':
-      return 'Type address or "fix water heater"...';
-    case 'intelligence':
-      return 'Type address or "show revenue"...';
-    default:
-      return 'Type an address or command...';
-  }
-}
-
-function generateSuggestions(input: string, activeTab: string): string[] {
-  if (input.length < 2) return [];
-
-  const commonSuggestions = [
-    '123 Main Street',
-    '456 Oak Avenue',
-    '789 Pine Road',
-  ];
-
-  const tabSpecificSuggestions = {
-    overview: [
-      'show health score',
-      'view alerts',
-      'recent activity',
-      'property summary',
-    ],
-    operations: [
-      'schedule maintenance',
-      'create work order',
-      'tenant information',
-      'fix water heater',
-      'inspect HVAC',
-    ],
-    intelligence: [
-      'show revenue',
-      'market analysis',
-      'expense report',
-      'rent optimization',
-      'tax deductions',
-    ],
-  };
-
-  const suggestions = [
-    ...commonSuggestions,
-    ...tabSpecificSuggestions[activeTab as keyof typeof tabSpecificSuggestions] || [],
-  ];
-
-  return suggestions
-    .filter(suggestion => 
-      suggestion.toLowerCase().includes(input.toLowerCase())
-    )
-    .slice(0, 5);
 }
