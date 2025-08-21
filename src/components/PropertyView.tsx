@@ -1,4 +1,4 @@
-// import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
 import { usePropertyStore } from '@/store/propertyStore';
@@ -8,9 +8,10 @@ import OperationsTab from './tabs/OperationsTab';
 import IntelligenceTab from './tabs/IntelligenceTab';
 
 export default function PropertyView() {
-  const { getCurrentProperty, setActiveTab, activeTab } = usePropertyStore();
+  const { id } = useParams<{ id: string }>();
+  const { getPropertyById, setActiveTab, activeTab } = usePropertyStore();
   
-  const property = getCurrentProperty();
+  const property = id ? getPropertyById(id) : null;
 
   // Swipe between tabs on mobile
   const handlers = useSwipeable({
