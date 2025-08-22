@@ -10,7 +10,7 @@ import PropertyDataPreview from './PropertyDataPreview';
 
 const CONTEXTUAL_SUGGESTIONS = {
   overview: [
-    '123 Main Street',
+    '123 Main Street, Boston, MA 02101',
     'Add new property',
     'Search properties'
   ],
@@ -44,7 +44,7 @@ export default function UniversalCommandBar() {
 
   const currentSuggestions = CONTEXTUAL_SUGGESTIONS[activeTab as keyof typeof CONTEXTUAL_SUGGESTIONS] || CONTEXTUAL_SUGGESTIONS.overview;
   const placeholder = activeTab === 'overview' 
-    ? 'Type an address or command...' 
+    ? 'Type full address: 123 Main St, City, State ZIP' 
     : `Ask about ${activeTab}...`;
 
   useEffect(() => {
@@ -170,32 +170,46 @@ export default function UniversalCommandBar() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder={isProcessing ? 'Processing...' : placeholder}
-              disabled={isProcessing}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+              onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleSubmit(e);
+              }
+            }}
+              placeholder={placeholder}
+              className="w-full px-4 py-3 pr-12 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
             />
-            {isProcessing && (
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+            {/* Show validation message for incomplete addresses */}
+            {input.trim() && !input.includes(',') && /^\d+\s+[A-Za-z\s]+/.test(input.trim()) && (
+              <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                ⚠️ Please include city and state: "{input.trim()}, City, State"
               </div>
             )}
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+              <button
+                onClick={getCurrentLocationAddress}
+                disabled={isGettingLocation}
+                className="p-1 text-gray-400 hover:text-blue-500 transition-colors disabled:opacity-50"
+                title="Use current location"
+              >
+                {isGettingLocation ? (
+                  <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <MapPinIcon className="w-5 h-5" />
+                )}
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!input.trim() || isProcessing}
+                className="p-1 text-gray-400 hover:text-blue-500 transition-colors disabled:opacity-50"
+              >
+                {isProcessing ? (
+                  <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <PaperAirplaneIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
-
-          <button
-            type="button"
-            onClick={getCurrentLocationAddress}
-            disabled={isGettingLocation}
-            className={`p-3 rounded-full transition-colors ${
-              isGettingLocation
-                ? 'bg-blue-500 text-white animate-pulse'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-            title="Use my current location"
-          >
-            <MapPinIcon className="w-5 h-5" />
-          </button>
 
           <button
             type="button"
@@ -214,14 +228,6 @@ export default function UniversalCommandBar() {
             className="p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors"
           >
             <CameraIcon className="w-5 h-5" />
-          </button>
-
-          <button
-            type="submit"
-            disabled={!input.trim() || isProcessing}
-            className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <PaperAirplaneIcon className="w-5 h-5" />
           </button>
         </form>
       </div>

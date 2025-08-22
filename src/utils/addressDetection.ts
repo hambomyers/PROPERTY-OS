@@ -18,11 +18,11 @@ const ADDRESS_PATTERNS = [
   // Standard US addresses: "123 Main St", "456 Oak Avenue"
   /^(\d+)\s+([A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Circle|Cir|Court|Ct|Place|Pl|Way|Parkway|Pkwy))\b/i,
   
-  // With city and state: "123 Main St, Boston MA"
-  /^(\d+)\s+([A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Circle|Cir|Court|Ct|Place|Pl|Way|Parkway|Pkwy)),?\s+([A-Za-z\s]+),?\s+([A-Z]{2})\b/i,
+  // REQUIRE city and state: "123 Main St, Boston, MA"
+  /^(\d+)\s+([A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Circle|Cir|Court|Ct|Place|Pl|Way|Parkway|Pkwy)),\s+([A-Za-z\s]+),\s+([A-Z]{2})\b/i,
   
-  // With ZIP: "123 Main St, Boston MA 02101"
-  /^(\d+)\s+([A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Circle|Cir|Court|Ct|Place|Pl|Way|Parkway|Pkwy)),?\s+([A-Za-z\s]+),?\s+([A-Z]{2})\s+(\d{5}(?:-\d{4})?)\b/i,
+  // REQUIRE city, state and ZIP: "123 Main St, Boston, MA 02101"
+  /^(\d+)\s+([A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Circle|Cir|Court|Ct|Place|Pl|Way|Parkway|Pkwy)),\s+([A-Za-z\s]+),\s+([A-Z]{2})\s+(\d{5}(?:-\d{4})?)\b/i,
   
   // Apartment/Unit numbers: "123 Main St Apt 4B"
   /^(\d+)\s+([A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Circle|Cir|Court|Ct|Place|Pl|Way|Parkway|Pkwy))\s+(?:Apt|Apartment|Unit|#)\s*([A-Za-z0-9]+)/i,
@@ -95,11 +95,11 @@ function calculateConfidence(match: RegExpMatchArray, patternIndex: number): num
   let confidence = 0.8; // Base confidence
   
   // Higher confidence for more specific patterns
-  if (patternIndex === 0) confidence = 0.9; // Standard format
-  if (patternIndex === 1) confidence = 0.95; // With city/state
-  if (patternIndex === 2) confidence = 0.98; // With ZIP
+  if (patternIndex === 0) confidence = 0.5; // Standard format - TOO VAGUE
+  if (patternIndex === 1) confidence = 0.95; // With city/state - GOOD
+  if (patternIndex === 2) confidence = 0.98; // With ZIP - BEST
   if (patternIndex === 3) confidence = 0.85; // With apartment
-  if (patternIndex === 4) confidence = 0.7; // Simple format
+  if (patternIndex === 4) confidence = 0.3; // Simple format - TOO VAGUE
   
   // Boost confidence for common street suffixes
   const streetText = match[2] || '';
