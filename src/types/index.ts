@@ -2,12 +2,12 @@
 export interface Property {
   id: string;
   address: Address;
-  geo: [number, number];
   overview: OverviewData;
   operations: OperationsData;
   intelligence: IntelligenceData;
-  created: number;
-  updated: number;
+  createdAt: Date;
+  updatedAt: Date;
+  publicData?: any; // For storing scraped public data
 }
 
 export interface Address {

@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MicrophoneIcon, CameraIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { MicrophoneIcon, CameraIcon, PaperAirplaneIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import { usePropertyStore } from '@/store/propertyStore';
 import { CommandProcessor } from '@/services/CommandProcessor';
 import { PropertyGenesis } from '@/services/PropertyGenesis';
+import { GeolocationService } from '@/services/GeolocationService';
+import PropertyDataPreview from './PropertyDataPreview';
 
 const CONTEXTUAL_SUGGESTIONS = {
   overview: [
@@ -29,12 +31,16 @@ export default function UniversalCommandBar() {
   const [isListening, setIsListening] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showDataPreview, setShowDataPreview] = useState(false);
+  const [previewAddress, setPreviewAddress] = useState('');
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { activeTab, addProperty, setActiveProperty } = usePropertyStore();
 
   const commandProcessor = CommandProcessor.getInstance();
   const propertyGenesis = PropertyGenesis.getInstance();
+  const geolocationService = GeolocationService.getInstance();
 
   const currentSuggestions = CONTEXTUAL_SUGGESTIONS[activeTab as keyof typeof CONTEXTUAL_SUGGESTIONS] || CONTEXTUAL_SUGGESTIONS.overview;
   const placeholder = activeTab === 'overview' 
@@ -66,23 +72,10 @@ export default function UniversalCommandBar() {
       const command = await commandProcessor.processInput(input, { activeTab });
       console.log('Processed command:', command);
 
-      // Handle address commands specially
+      // Handle address commands specially - show data preview first
       if (command.type === 'address' && command.addressMatch) {
-        const result = await propertyGenesis.createPropertyFromAddress(command.addressMatch);
-        
-        if (result.success && result.property) {
-          // Add property to store
-          addProperty(result.property);
-          setActiveProperty(result.property);
-          
-          // Navigate to property view
-          navigate(`/property/${result.property.id}`);
-          
-          // Show success message
-          console.log('Property created successfully:', result.property.address);
-        } else {
-          console.error('Failed to create property:', result.message);
-        }
+        setPreviewAddress(command.addressMatch.formatted);
+        setShowDataPreview(true);
       } else {
         // Execute other command types
         const result = await commandProcessor.executeCommand(command);
@@ -117,9 +110,25 @@ export default function UniversalCommandBar() {
     inputRef.current?.focus();
   };
 
-  const handleVoiceInput = () => {
-    setIsListening(!isListening);
+  const getCurrentLocationAddress = async () => {
+    setIsGettingLocation(true);
+    try {
+      const address = await geolocationService.getCurrentAddress();
+      setInput(address.formatted);
+      setPreviewAddress(address.formatted);
+      setShowDataPreview(true);
+    } catch (error) {
+      console.error('Failed to get current location:', error);
+      alert('Unable to get your location. Please ensure location access is enabled.');
+    } finally {
+      setIsGettingLocation(false);
+    }
+  };
+
+  const startListening = () => {
+    setIsListening(true);
     // TODO: Implement voice recognition
+    setTimeout(() => setIsListening(false), 3000);
   };
 
   const handleCameraInput = () => {
@@ -176,9 +185,22 @@ export default function UniversalCommandBar() {
 
           <button
             type="button"
-            onClick={handleVoiceInput}
-            disabled={isProcessing}
-            className={`p-3 rounded-full transition-colors disabled:opacity-50 ${
+            onClick={getCurrentLocationAddress}
+            disabled={isGettingLocation}
+            className={`p-3 rounded-full transition-colors ${
+              isGettingLocation
+                ? 'bg-blue-500 text-white animate-pulse'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+            title="Use my current location"
+          >
+            <MapPinIcon className="w-5 h-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={startListening}
+            className={`p-3 rounded-full transition-colors ${
               isListening 
                 ? 'bg-red-500 text-white' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -189,9 +211,7 @@ export default function UniversalCommandBar() {
 
           <button
             type="button"
-            onClick={handleCameraInput}
-            disabled={isProcessing}
-            className="p-3 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50"
+            className="p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors"
           >
             <CameraIcon className="w-5 h-5" />
           </button>
@@ -205,6 +225,17 @@ export default function UniversalCommandBar() {
           </button>
         </form>
       </div>
+      
+      {/* Property Data Preview Modal */}
+      {showDataPreview && (
+        <PropertyDataPreview
+          address={previewAddress}
+          onClose={() => {
+            setShowDataPreview(false);
+            setPreviewAddress('');
+          }}
+        />
+      )}
     </div>
   );
 }
