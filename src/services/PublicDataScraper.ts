@@ -257,21 +257,11 @@ export class PublicDataScraper {
   }
 
   private async getViolationData(address: string): Promise<ViolationData[]> {
-    // TODO: Integrate with code enforcement databases
-    // - Housing violations
-    // - Safety violations
-    // - Zoning violations
-    
-    return this.generateMockViolations(address);
+    throw new Error('Violation data API not implemented - no mock data available');
   }
 
   private async getSalesHistory(address: string): Promise<SaleData[]> {
-    // TODO: Integrate with MLS and public records
-    // - County recorder office
-    // - MLS data (if accessible)
-    // - Deed records
-    
-    return this.generateMockSales(address);
+    throw new Error('Sales history API not implemented - no mock data available');
   }
 
   private async getDemographics(city: string, state: string): Promise<DemographicsData> {
@@ -297,21 +287,11 @@ export class PublicDataScraper {
   }
 
   private async getSchoolData(address: string): Promise<SchoolData[]> {
-    // TODO: Integrate with school district APIs
-    // - GreatSchools API
-    // - State education department APIs
-    // - School district boundaries
-    
-    return this.generateMockSchools(address);
+    throw new Error('School data API not implemented - no mock data available');
   }
 
   private async getCrimeData(address: string): Promise<CrimeData> {
-    // TODO: Integrate with crime databases
-    // - Local police department APIs
-    // - FBI Crime Data
-    // - SpotCrime API
-    
-    return this.generateMockCrime(address);
+    throw new Error('Crime data API not implemented - no mock data available');
   }
 
   private async getWalkScore(address: string): Promise<number> {
@@ -339,196 +319,22 @@ export class PublicDataScraper {
   }
 
   private async getFloodZone(address: string): Promise<string> {
-    // TODO: Integrate with FEMA flood maps
-    const zones = ['X', 'AE', 'A', 'VE', 'D'];
-    return zones[Math.floor(Math.random() * zones.length)];
+    throw new Error('FEMA flood zone API not implemented - no mock data available');
   }
 
   private async getZoning(address: string): Promise<string> {
-    // TODO: Integrate with city zoning APIs
-    const zones = ['R-1', 'R-2', 'R-3', 'C-1', 'M-1'];
-    return zones[Math.floor(Math.random() * zones.length)];
+    throw new Error('Zoning API not implemented - no mock data available');
   }
 
-  // Mock data generators (replace with real API calls)
-  private generateMockTaxData(address: string): TaxData {
-    const baseValue = 300000 + Math.random() * 400000;
-    return {
-      assessedValue: Math.round(baseValue),
-      landValue: Math.round(baseValue * 0.3),
-      improvementValue: Math.round(baseValue * 0.7),
-      taxAmount: Math.round(baseValue * 0.012),
-      millRate: 12.5,
-      yearBuilt: Math.floor(1950 + Math.random() * 74),
-      squareFootage: Math.floor(800 + Math.random() * 2200),
-      lotSize: Math.floor(3000 + Math.random() * 7000),
-      propertyType: 'Single Family',
-      bedrooms: Math.floor(2 + Math.random() * 4),
-      bathrooms: Math.floor(1 + Math.random() * 3),
-      stories: Math.floor(1 + Math.random() * 2),
-      heating: 'Forced Air',
-      cooling: 'Central Air',
-      exterior: 'Vinyl Siding',
-      roof: 'Asphalt Shingle',
-      lastAssessment: new Date(2024, 0, 1)
-    };
-  }
 
-  private generateMockMarketData(address: string): MarketData {
-    const baseValue = 400000 + Math.random() * 300000;
-    const sqft = 1000 + Math.random() * 2000;
-    
-    return {
-      estimatedValue: Math.round(baseValue),
-      pricePerSqft: Math.round(baseValue / sqft),
-      rentEstimate: Math.round(baseValue * 0.008),
-      rentPerSqft: Math.round((baseValue * 0.008) / sqft),
-      appreciation1Year: (Math.random() - 0.3) * 0.2,
-      appreciation5Year: Math.random() * 0.5,
-      daysOnMarket: Math.floor(15 + Math.random() * 45),
-      inventory: Math.floor(20 + Math.random() * 80),
-      priceHistory: this.generatePriceHistory(baseValue),
-      comparables: this.generateComparables(address, baseValue, sqft)
-    };
-  }
 
-  private generateMockPermits(address: string): PermitData[] {
-    const permits = [];
-    const permitTypes = [
-      'Electrical', 'Plumbing', 'HVAC', 'Roofing', 'Addition', 'Renovation'
-    ];
-    
-    const numPermits = Math.floor(Math.random() * 5);
-    for (let i = 0; i < numPermits; i++) {
-      permits.push({
-        permitNumber: `P${Date.now()}-${i}`,
-        type: permitTypes[Math.floor(Math.random() * permitTypes.length)],
-        description: 'Permit description here',
-        value: Math.floor(1000 + Math.random() * 20000),
-        issueDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000 * 5),
-        status: Math.random() > 0.2 ? 'Completed' : 'Active',
-        contractor: 'ABC Construction'
-      });
-    }
-    
-    return permits;
-  }
 
-  private generateMockViolations(address: string): ViolationData[] {
-    // Most properties have no violations
-    if (Math.random() > 0.3) return [];
-    
-    return [{
-      violationId: `V${Date.now()}`,
-      type: 'Housing Code',
-      description: 'Minor maintenance issue',
-      issueDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-      status: 'Resolved',
-      fine: 150
-    }];
-  }
 
-  private generateMockSales(address: string): SaleData[] {
-    const sales = [];
-    const numSales = Math.floor(1 + Math.random() * 3);
-    let currentPrice = 300000 + Math.random() * 200000;
-    
-    for (let i = 0; i < numSales; i++) {
-      const yearsAgo = (i + 1) * (2 + Math.random() * 3);
-      const saleDate = new Date(Date.now() - yearsAgo * 365 * 24 * 60 * 60 * 1000);
-      
-      sales.push({
-        saleDate,
-        salePrice: Math.round(currentPrice),
-        pricePerSqft: Math.round(currentPrice / (1000 + Math.random() * 1000)),
-        deedType: 'Warranty Deed',
-        buyer: 'Private Party',
-        seller: 'Private Party'
-      });
-      
-      currentPrice *= 0.85; // Earlier sales were cheaper
-    }
-    
-    return sales.reverse(); // Oldest first
-  }
 
-  private generateMockDemographics(city: string): DemographicsData {
-    return {
-      medianIncome: Math.floor(40000 + Math.random() * 60000),
-      medianAge: Math.floor(25 + Math.random() * 30),
-      populationDensity: Math.floor(1000 + Math.random() * 5000),
-      educationLevel: 'Bachelor\'s Degree',
-      employmentRate: 0.85 + Math.random() * 0.1
-    };
-  }
 
-  private generateMockSchools(address: string): SchoolData[] {
-    return [
-      {
-        name: 'Lincoln Elementary',
-        type: 'elementary',
-        rating: Math.floor(6 + Math.random() * 4),
-        distance: Math.random() * 2,
-        enrollment: Math.floor(300 + Math.random() * 400)
-      },
-      {
-        name: 'Washington Middle School',
-        type: 'middle',
-        rating: Math.floor(5 + Math.random() * 5),
-        distance: Math.random() * 3,
-        enrollment: Math.floor(500 + Math.random() * 600)
-      }
-    ];
-  }
 
-  private generateMockCrime(address: string): CrimeData {
-    return {
-      crimeRate: Math.floor(10 + Math.random() * 40),
-      violentCrimeRate: Math.floor(1 + Math.random() * 10),
-      propertyCrimeRate: Math.floor(5 + Math.random() * 30),
-      trend: ['increasing', 'decreasing', 'stable'][Math.floor(Math.random() * 3)] as any
-    };
-  }
 
-  private generatePriceHistory(baseValue: number): PricePoint[] {
-    const history = [];
-    let currentValue = baseValue * 0.7; // Start lower
-    
-    for (let i = 60; i >= 0; i -= 6) {
-      const date = new Date(Date.now() - i * 30 * 24 * 60 * 60 * 1000);
-      history.push({
-        date,
-        price: Math.round(currentValue),
-        event: i === 0 ? 'Current Estimate' : undefined
-      });
-      currentValue *= 1.02; // 2% growth every 6 months
-    }
-    
-    return history;
-  }
 
-  private generateComparables(address: string, baseValue: number, sqft: number): PropertyComparable[] {
-    const comps = [];
-    
-    for (let i = 0; i < 5; i++) {
-      const compValue = baseValue * (0.8 + Math.random() * 0.4);
-      const compSqft = sqft * (0.8 + Math.random() * 0.4);
-      
-      comps.push({
-        address: `${100 + i * 10} Nearby Street`,
-        distance: Math.random() * 0.5,
-        price: Math.round(compValue),
-        pricePerSqft: Math.round(compValue / compSqft),
-        squareFootage: Math.round(compSqft),
-        bedrooms: Math.floor(2 + Math.random() * 3),
-        bathrooms: Math.floor(1 + Math.random() * 3),
-        yearBuilt: Math.floor(1950 + Math.random() * 74),
-        saleDate: new Date(Date.now() - Math.random() * 180 * 24 * 60 * 60 * 1000)
-      });
-    }
-    
-    return comps;
-  }
 
   // Real API data parsers
   private parseRealtyMoleData(data: any): TaxData {
