@@ -29,6 +29,9 @@ export default function PropertyDataPreview({ address, onClose }: PropertyDataPr
       setPublicData(data);
     } catch (error) {
       console.error('Error loading public data:', error);
+      // Show error to user instead of hiding it
+      alert(`Failed to load property data: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API keys in .env file.`);
+      setPublicData(null);
     } finally {
       setLoading(false);
     }

@@ -177,6 +177,11 @@ export class PublicDataScraper {
   }
 
   private async getTaxAssessmentData(address: string): Promise<TaxData> {
+    // Remove all API key checks - if no key, throw error instead of falling back to mock data
+    if (!process.env.REALTYMOLE_API_KEY && !process.env.ATTOM_API_KEY) {
+      throw new Error('No API keys configured for tax assessment data');
+    }
+
     try {
       // Use RealtyMole API for property data
       const response = await fetch(`https://api.realtymole.com/api/v1/properties?address=${encodeURIComponent(address)}`, {
@@ -187,19 +192,23 @@ export class PublicDataScraper {
       });
       
       if (!response.ok) {
-        throw new Error(`Tax assessment API failed: ${response.status}`);
+        throw new Error(`RealtyMole API failed: ${response.status}`);
       }
       
       const data = await response.json();
       return this.parseRealtyMoleData(data);
     } catch (error) {
-      console.error('Tax assessment API error:', error);
-      // Fallback to Attom Data API
+      console.error('RealtyMole API error:', error);
+      // Try Attom Data API
       return this.getAttomPropertyData(address);
     }
   }
 
   private async getMarketData(address: string): Promise<MarketData> {
+    if (!process.env.RENTSPREE_API_KEY && !process.env.REALTOR_API_KEY) {
+      throw new Error('No API keys configured for market data');
+    }
+
     try {
       // Use Rentspree API for rental estimates
       const rentResponse = await fetch(`https://api.rentspree.com/v1/properties/estimate?address=${encodeURIComponent(address)}`, {
@@ -217,6 +226,10 @@ export class PublicDataScraper {
         }
       });
       
+      if (!rentResponse.ok && !valueResponse.ok) {
+        throw new Error(`All market data APIs failed: Rentspree ${rentResponse.status}, Realtor ${valueResponse.status}`);
+      }
+      
       const [rentData, valueData] = await Promise.all([
         rentResponse.ok ? rentResponse.json() : null,
         valueResponse.ok ? valueResponse.json() : null
@@ -225,7 +238,7 @@ export class PublicDataScraper {
       return this.parseMarketData(rentData, valueData, address);
     } catch (error) {
       console.error('Market data API error:', error);
-      throw new Error('Failed to fetch market data');
+      throw new Error(`Market data API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -263,18 +276,23 @@ export class PublicDataScraper {
 
   private async getDemographics(city: string, state: string): Promise<DemographicsData> {
     try {
-      // Use US Census Bureau API
-      const response = await fetch(`https://api.census.gov/data/2021/acs/acs5?get=B19013_001E,B25077_001E,B08303_001E&for=place:*&in=state:${this.getStateFips(state)}`);
+      // Use US Census Bureau API (no key required for basic data)
+      const stateFips = this.getStateFips(state);
+      const response = await fetch(`https://api.census.gov/data/2021/acs/acs5?get=B19013_001E,B25077_001E,B08303_001E&for=place:*&in=state:${stateFips}`);
       
       if (!response.ok) {
-        throw new Error(`Census API failed: ${response.status}`);
+        throw new Error(`Census API failed: ${response.status} - ${response.statusText}`);
       }
       
       const data = await response.json();
+      if (!data || data.length < 2) {
+        throw new Error('No census data returned');
+      }
+      
       return this.parseCensusData(data, city);
     } catch (error) {
       console.error('Demographics API error:', error);
-      throw new Error('Failed to fetch demographics data');
+      throw new Error(`Census API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -297,18 +315,26 @@ export class PublicDataScraper {
   }
 
   private async getWalkScore(address: string): Promise<number> {
+    if (!process.env.WALKSCORE_API_KEY) {
+      throw new Error('No Walk Score API key configured');
+    }
+
     try {
-      const response = await fetch(`https://api.walkscore.com/score?format=json&address=${encodeURIComponent(address)}&wsapikey=${process.env.WALKSCORE_API_KEY || ''}`);
+      const response = await fetch(`https://api.walkscore.com/score?format=json&address=${encodeURIComponent(address)}&wsapikey=${process.env.WALKSCORE_API_KEY}`);
       
       if (!response.ok) {
-        throw new Error(`Walk Score API failed: ${response.status}`);
+        throw new Error(`Walk Score API failed: ${response.status} - ${response.statusText}`);
       }
       
       const data = await response.json();
+      if (data.status !== 1) {
+        throw new Error(`Walk Score API error: ${data.status}`);
+      }
+      
       return data.walkscore || 0;
     } catch (error) {
       console.error('Walk Score API error:', error);
-      return 0;
+      throw new Error(`Walk Score API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -529,21 +555,27 @@ export class PublicDataScraper {
   }
 
   private async getAttomPropertyData(address: string): Promise<TaxData> {
+    if (!process.env.ATTOM_API_KEY) {
+      throw new Error('No Attom API key configured');
+    }
+
     try {
       const response = await fetch(`https://api.attomdata.com/propertyapi/v1.0.0/property/detail?address1=${encodeURIComponent(address)}`, {
         headers: {
-          'apikey': process.env.ATTOM_API_KEY || '',
+          'apikey': process.env.ATTOM_API_KEY,
           'Accept': 'application/json'
         }
       });
       
-      if (!response.ok) throw new Error('Attom API failed');
+      if (!response.ok) {
+        throw new Error(`Attom API failed: ${response.status} - ${response.statusText}`);
+      }
       
       const data = await response.json();
       return this.parseAttomData(data);
     } catch (error) {
       console.error('Attom API error:', error);
-      throw new Error('All tax assessment APIs failed');
+      throw new Error(`Attom API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 

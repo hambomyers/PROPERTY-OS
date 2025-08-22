@@ -65,26 +65,34 @@ export class GeolocationService {
   }
 
   async reverseGeocode(coordinates: GeolocationCoordinates): Promise<GeolocationAddress> {
+    if (!process.env.GOOGLE_MAPS_API_KEY && !process.env.MAPBOX_API_KEY) {
+      throw new Error('No geocoding API keys configured');
+    }
+
     try {
       // Use Google Maps Geocoding API
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinates.latitude},${coordinates.longitude}&key=${process.env.GOOGLE_MAPS_API_KEY || ''}`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinates.latitude},${coordinates.longitude}&key=${process.env.GOOGLE_MAPS_API_KEY}`
       );
       
       if (!response.ok) {
-        throw new Error(`Google Maps API failed: ${response.status}`);
+        throw new Error(`Google Maps API failed: ${response.status} - ${response.statusText}`);
       }
       
       const data = await response.json();
       
-      if (data.status !== 'OK' || !data.results.length) {
+      if (data.status !== 'OK') {
+        throw new Error(`Google Maps API error: ${data.status} - ${data.error_message || 'Unknown error'}`);
+      }
+      
+      if (!data.results || data.results.length === 0) {
         throw new Error('No address found for coordinates');
       }
       
       return this.parseGoogleMapsResponse(data.results[0], coordinates);
     } catch (error) {
-      console.error('Reverse geocoding failed:', error);
-      // Fallback to MapBox API
+      console.error('Google Maps geocoding failed:', error);
+      // Try MapBox API as fallback
       return this.reverseGeocodeMapBox(coordinates);
     }
   }
@@ -113,6 +121,10 @@ export class GeolocationService {
   }
 
   private parseGoogleMapsResponse(result: any, coordinates: GeolocationCoordinates): GeolocationAddress {
+    if (!result.address_components) {
+      throw new Error('Invalid Google Maps response - no address components');
+    }
+
     const components = result.address_components;
     
     let street = '';
@@ -135,6 +147,11 @@ export class GeolocationService {
         zip = component.long_name;
       }
     });
+
+    // Validate we got the essential components
+    if (!street || !city || !state) {
+      throw new Error(`Incomplete address data: street=${street}, city=${city}, state=${state}`);
+    }
     
     return {
       street: street.trim(),
