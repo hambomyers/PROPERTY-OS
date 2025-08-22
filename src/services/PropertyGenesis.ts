@@ -54,7 +54,6 @@ export class PropertyGenesis {
         zip: '02101',
         formatted: address
       },
-      geo: [42.3601, -71.0589] as [number, number],
       overview: {
         healthScore: this.generateHealthScore(),
         status: this.generatePropertyStatus(),
@@ -120,8 +119,8 @@ export class PropertyGenesis {
           taxes: []
         }
       },
-      created: Date.now(),
-      updated: Date.now()
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
   }
 

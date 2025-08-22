@@ -202,14 +202,13 @@ export interface TenantData {
   id: string;
   name: string;
   unit: string;
+  email: string;
+  phone: string;
   leaseStart: Date;
   leaseEnd: Date;
-  rentAmount: number;
-  paymentStatus: 'current' | 'late' | 'pending';
-  contact: {
-    phone: string;
-    email: string;
-  };
+  rent: number;
+  deposit: number;
+  status: 'active' | 'inactive' | 'pending';
 }
 
 export interface InspectionData {
