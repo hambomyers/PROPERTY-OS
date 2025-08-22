@@ -99,7 +99,6 @@ export class RealPropertyDataService {
         zip: addressParts.zip,
         formatted: input.address
       },
-      geo: [0, 0], // Will be geocoded
       overview: {
         healthScore,
         status: this.getStatusFromScore(healthScore),
@@ -133,6 +132,7 @@ export class RealPropertyDataService {
         tenants: input.tenantName ? [{
           id: 'tenant_1',
           name: input.tenantName,
+          unit: '1',
           email: '',
           phone: '',
           leaseStart: input.leaseStart || new Date(),
@@ -186,8 +186,8 @@ export class RealPropertyDataService {
           taxes: []
         }
       },
-      created: Date.now(),
-      updated: Date.now()
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
   }
 
